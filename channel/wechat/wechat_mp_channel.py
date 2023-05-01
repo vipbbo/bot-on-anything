@@ -7,6 +7,36 @@ from channel.channel import Channel
 from concurrent.futures import ThreadPoolExecutor
 import os
 
+import collections
+
+
+class RateLimitException(Exception):
+    pass
+
+
+def rate_limiter(limit):
+    counts = collections.defaultdict(lambda: collections.Counter())
+
+    def decorate(func):
+        def call(user_id, *args, **kwargs):
+            api_name = func.__name__
+            user_counts = counts[user_id]
+
+            user_counts[api_name] += 1
+
+            if user_counts[api_name] > limit:
+                raise RateLimitException(f"User {user_id} has exceeded the rate limit of {limit} for API {api_name}")
+
+            return func(user_id, *args, **kwargs)
+
+        return call
+
+    return decorate
+
+@rate_limiter(3)
+def limit_api(user_id):
+    print(f"Example API called for user {user_id}")
+
 
 
 robot = werobot.WeRoBot(token=channel_conf(const.WECHAT_MP).get('token'))
@@ -15,6 +45,7 @@ cache = {}
 
 @robot.text
 def hello_world(msg):
+    limit_api(msg.source)
     with open('sensitive_words.txt', 'r', encoding='utf-8') as f: #加入检测违规词
         sensitive_words = [line.strip() for line in f.readlines()]
         found = False
