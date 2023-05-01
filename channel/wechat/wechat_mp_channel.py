@@ -25,7 +25,9 @@ def rate_limiter(limit):
             user_counts[api_name] += 1
 
             if user_counts[api_name] > limit:
-                raise RateLimitException(f"User {user_id} has exceeded the rate limit of {limit} for API {api_name}")
+                logger.error(f"User {user_id} has exceeded the rate limit of {limit} for API {api_name}")
+                return "您的免费额度只有10次。"
+                # raise RateLimitException(f"User {user_id} has exceeded the rate limit of {limit} for API {api_name}")
 
             return func(user_id, *args, **kwargs)
 
