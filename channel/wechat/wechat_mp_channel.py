@@ -25,9 +25,7 @@ def rate_limiter(limit):
             user_counts[api_name] += 1
 
             if user_counts[api_name] > limit:
-                logger.error(f"User {user_id} has exceeded the rate limit of {limit} for API {api_name}")
-                return "您的免费额度只有10次。"
-                # raise RateLimitException(f"User {user_id} has exceeded the rate limit of {limit} for API {api_name}")
+                raise RateLimitException(f"User {user_id} has exceeded the rate limit of {limit} for API {api_name}")
 
             return func(user_id, *args, **kwargs)
 
@@ -47,7 +45,10 @@ cache = {}
 
 @robot.text
 def hello_world(msg):
-    limit_api(msg.source)
+    try:
+        limit_api(msg.source)
+    except RateLimitException as e:
+        return "您的免费额度只有10次。"
     with open('sensitive_words.txt', 'r', encoding='utf-8') as f: #加入检测违规词
         sensitive_words = [line.strip() for line in f.readlines()]
         found = False
