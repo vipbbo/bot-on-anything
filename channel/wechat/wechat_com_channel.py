@@ -18,7 +18,9 @@ from wechatpy.enterprise import WeChatClient
 from wechatpy.exceptions import InvalidSignatureException
 from wechatpy.enterprise.exceptions import InvalidCorpIdException
 from wechatpy.enterprise import parse_message
-from flask import Flask, request, abort
+from flask import Flask, request, abort, make_response
+import xml.etree.ElementTree as ET
+import datetime
 
 thread_pool = ThreadPoolExecutor(max_workers=8)
 app = Flask(__name__)
@@ -99,9 +101,24 @@ class WechatEnterpriseChannel(Channel):
                 )
             except (InvalidSignatureException, InvalidCorpIdException):
                 abort(403)
+            # Handle user click event on menu
+            data = request.data
+            xml_data = ET.fromstring(data)
+            event_type = xml_data.find("Event").text
+            from_user_name = xml_data.find("FromUserName").text
+            to_user_name = xml_data.find("ToUserName").text
             msg = parse_message(message)
             if msg.type == 'text':
                 thread_pool.submit(self._do_send, msg.content, msg.source)
+            if event_type == "CLICK":
+                event_key = xml_data.find("EventKey").text
+                if event_key == "V1001_PERSON_INFO":
+                    content = "个人信息\n角色：言小宝\n音色：小宝\n回复方式：仅文字\n余额：10次"
+                    escaped_response_str = content.replace("<br/>", "&lt;br/&gt;")
+                    response_str = "<xml><ToUserName><![CDATA[%s]]></ToUserName><FromUserName><![CDATA[%s]]></FromUserName><CreateTime>%s</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[%s]]></Content></xml>"
+                    resp = make_response(response_str % (from_user_name, to_user_name, datetime.datetime.now(), escaped_response_str))
+                    resp.content_type = "application/xml"
+                    return resp
             else:
                 reply = 'Can not handle this for now'
                 # 未能处理的消息或菜单事件暂不做响应优化用户体验
