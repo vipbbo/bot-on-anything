@@ -76,7 +76,8 @@ class WechatSubsribeAccount(Channel):
         robot.run()
 
     def handle(self, msg, count=1):
-        logger.info("msg:{}", str(msg))
+        logger.info("msg.source:{}", str(msg.source))
+        logger.info("msg.content:{}", str(msg.content))
         if msg.content == "继续":
             return self.get_un_send_content(msg.source)
 
