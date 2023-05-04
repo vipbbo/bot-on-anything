@@ -78,11 +78,13 @@ class WechatEnterpriseChannel(Channel):
             logger.exception(e)
 
     def handle(self):
+        logger.info("----------81---------")
         query_params = request.args
         signature = query_params.get('msg_signature', '')
         timestamp = query_params.get('timestamp', '')
         nonce = query_params.get('nonce', '')
         if request.method == 'GET':
+            logger.info("----------GET-------")
             # 处理验证请求
             echostr = query_params.get('echostr', '')
             try:
