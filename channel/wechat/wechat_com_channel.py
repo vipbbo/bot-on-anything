@@ -92,6 +92,7 @@ class WechatEnterpriseChannel(Channel):
             print(echostr)
             return echostr
         elif request.method == 'POST':
+            logger.info("----------")
             try:
                 message = self.crypto.decrypt_message(
                     request.data,
