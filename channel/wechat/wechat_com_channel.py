@@ -107,7 +107,10 @@ class WechatEnterpriseChannel(Channel):
             else:
                 return ""
         elif request.method == "POST":
-
+            data = request.data
+            xml_data = ET.fromstring(data)
+            logger.info("xml_data:{}", xml_data)
+            logger.info("xml_data.find(\"Event\").text:{}", xml_data.find("Event").text)
             try:
                 message = self.crypto.decrypt_message(
                     request.data,
