@@ -7,6 +7,15 @@ from concurrent.futures import ThreadPoolExecutor
 
 robot = werobot.WeRoBot(token=channel_conf(const.WECHAT_MP).get('token'))
 thread_pool = ThreadPoolExecutor(max_workers=8)
+client = robot.client
+
+client.create_menu({
+    "button": [{
+        "type": "click",
+        "name": "个人信息",
+        "key": "V1001_PERSON_INFO"
+    }]
+})
 
 
 @robot.text
@@ -15,7 +24,7 @@ def hello_world(msg):
     return WechatServiceAccount().handle(msg)
 
 
-@robot.key_click
+@robot.key_click("V1001_PERSON_INFO")
 def click_event(msg):
     logger.info('[WX_Public] click event: {}, userId: {}'.format(msg.content, msg.source))
     if msg.key == "V1001_PERSON_INFO":
