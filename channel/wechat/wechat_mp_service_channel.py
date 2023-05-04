@@ -6,18 +6,8 @@ from channel.channel import Channel
 from concurrent.futures import ThreadPoolExecutor
 
 robot = werobot.WeRoBot(token=channel_conf(const.WECHAT_MP).get('token'))
-robot.config["APP_ID"] = channel_conf(const.WECHAT_MP).get('app_id')
-robot.config["APP_SECRET"] = channel_conf(const.WECHAT_MP).get('app_secret')
 thread_pool = ThreadPoolExecutor(max_workers=8)
-client = robot.client
 
-client.create_menu({
-    "button": [{
-        "type": "click",
-        "name": "个人信息",
-        "key": "V1001_PERSON_INFO"
-    }]
-})
 
 @robot.click
 def V1001_PERSON_INFO(msg):
@@ -42,6 +32,14 @@ class WechatServiceAccount(Channel):
         robot.config["APP_ID"] = channel_conf(const.WECHAT_MP).get('app_id')
         robot.config["APP_SECRET"] = channel_conf(const.WECHAT_MP).get('app_secret')
         robot.config['HOST'] = '0.0.0.0'
+        client = robot.client
+        client.create_menu({
+            "button": [{
+                "type": "click",
+                "name": "个人信息",
+                "key": "V1001_PERSON_INFO"
+            }]
+        })
         robot.run()
 
     def handle(self, msg, count=0):
