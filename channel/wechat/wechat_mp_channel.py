@@ -76,6 +76,14 @@ def V1001_PERSON_INFO(msg):
     if msg.key == "V1001_PERSON_INFO":
         return "个人信息\n角色：言小宝\n音色：小宝\n回复方式：仅文字\n余额：10次!"
 
+
+@robot.click
+def V1002_CLEAR_INFO(msg):
+    logger.info('[WX_Public] click event msg.type: {}, userId: {}'.format(msg.type, msg.source))
+    logger.info('[WX_Public] click event msg.key:{}'.format(msg.key))
+    if msg.key == "V1002_CLEAR_INFO":
+        return WechatSubsribeAccount().handle("清除记忆")
+
     # return WechatServiceAccount().handle(msg)
 
 
