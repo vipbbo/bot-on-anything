@@ -68,6 +68,15 @@ def hello_world(msg):
             return WechatSubsribeAccount().handle(msg)
 
 
+
+@robot.click
+def V1001_PERSON_INFO(msg):
+    logger.info('[WX_Public] click event: {}, userId: {}'.format(msg.content, msg.source))
+    if msg.key == "V1001_PERSON_INFO":
+        return "Hello,World!"
+
+    # return WechatServiceAccount().handle(msg)
+
 class WechatSubsribeAccount(Channel):
     def startup(self):
         logger.info('[WX_Public] Wechat Public account service start!')
