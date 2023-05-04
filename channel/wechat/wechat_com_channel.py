@@ -79,6 +79,10 @@ class WechatEnterpriseChannel(Channel):
             logger.exception(e)
 
     def handle(self):
+        query_params = request.args
+        signature = query_params.get('msg_signature', '')
+        timestamp = query_params.get('timestamp', '')
+        nonce = query_params.get('nonce', '')
         if request.method == "GET":
             # Handle verification request from WeChat server
             signature = request.args.get("signature")
@@ -104,30 +108,44 @@ class WechatEnterpriseChannel(Channel):
                 return ""
         elif request.method == "POST":
 
-            now = datetime.datetime.now()
-            print("Current date and time: ", now)
-
-            # Handle user click event on menu
-            data = request.data
-            xml_data = ET.fromstring(data)
-            from_user_name = xml_data.find("FromUserName").text
-            to_user_name = xml_data.find("ToUserName").text
-            event_type = xml_data.find("Event").text
-
-            if event_type == "CLICK":
-                event_key = xml_data.find("EventKey").text
-
-                if event_key == "V1001_PERSON_INFO":
-                    # TODO: Execute corresponding operation for menu item 1
-                    response_str = "You clicked menu item 1!"
-                    content = "个人信息\n角色：言小宝\n音色：小宝\n回复方式：仅文字\n余额：10次"
-                elif event_key == "menu_item_2":
-                    # TODO: Execute corresponding operation for menu item 2
-                    response_str = "You clicked menu item 2!"
-                else:
-                    response_str = "Unknown menu item!"
+            try:
+                message = self.crypto.decrypt_message(
+                    request.data,
+                    signature,
+                    timestamp,
+                    nonce
+                )
+            except (InvalidSignatureException, InvalidCorpIdException):
+                abort(403)
+            msg = parse_message(message)
+            if msg.type == 'text':
+                thread_pool.submit(self._do_send, msg.content, msg.source)
             else:
-                response_str = "Invalid event type"
+                now = datetime.datetime.now()
+                print("Current date and time: ", now)
+
+                # Handle user click event on menu
+                data = request.data
+                xml_data = ET.fromstring(data)
+                from_user_name = xml_data.find("FromUserName").text
+                to_user_name = xml_data.find("ToUserName").text
+                event_type = xml_data.find("Event").text
+
+                if event_type == "CLICK":
+                    event_key = xml_data.find("EventKey").text
+
+                    if event_key == "V1001_PERSON_INFO":
+                        # TODO: Execute corresponding operation for menu item 1
+                        response_str = "You clicked menu item 1!"
+                        content = "个人信息\n角色：言小宝\n音色：小宝\n回复方式：仅文字\n余额：10次"
+                    elif event_key == "menu_item_2":
+                        # TODO: Execute corresponding operation for menu item 2
+                        response_str = "You clicked menu item 2!"
+                    else:
+                        response_str = "Unknown menu item!"
+                else:
+                    response_str = "Invalid event type"
+
 
             # resp = make_response(response_str)
             # resp.content_type = "application/xml"
