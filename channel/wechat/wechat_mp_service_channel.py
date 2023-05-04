@@ -18,6 +18,9 @@ def hello_world(msg):
 @robot.click
 def click_event(msg):
     logger.info('[WX_Public] click event: {}, userId: {}'.format(msg.content, msg.source))
+    if msg.key == "V1001_PERSON_INFO":
+        return "Hello,World!"
+
     # return WechatServiceAccount().handle(msg)
 
 
