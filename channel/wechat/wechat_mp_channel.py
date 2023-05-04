@@ -34,7 +34,7 @@ def rate_limiter(limit):
     return decorate
 
 
-@rate_limiter(3)
+@rate_limiter(10)
 def limit_api(user_id):
     print(f"Example API called for user {user_id}")
 
