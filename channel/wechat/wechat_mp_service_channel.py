@@ -17,13 +17,6 @@ client.create_menu({
     }]
 })
 
-
-@robot.text
-def hello_world(msg):
-    logger.info('[WX_Public] receive public msg: {}, userId: {}'.format(msg.content, msg.source))
-    return WechatServiceAccount().handle(msg)
-
-
 @robot.click
 def V1001_PERSON_INFO(msg):
     logger.info('[WX_Public] click event: {}, userId: {}'.format(msg.content, msg.source))
@@ -31,6 +24,13 @@ def V1001_PERSON_INFO(msg):
         return "Hello,World!"
 
     # return WechatServiceAccount().handle(msg)
+
+
+@robot.text
+def hello_world(msg):
+    logger.info('[WX_Public] receive public msg: {}, userId: {}'.format(msg.content, msg.source))
+    return WechatServiceAccount().handle(msg)
+
 
 
 class WechatServiceAccount(Channel):
