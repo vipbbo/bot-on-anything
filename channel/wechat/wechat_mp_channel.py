@@ -60,8 +60,8 @@ def hello_world(msg):
             return "输入内容有敏感词汇"
 
         else:
-            logger.info('[WX_Public] receive public msg: {}, userId: {}, msg.key:{}'.format(msg.content, msg.source,
-                                                                                            msg.key))
+            logger.info('[WX_Public] receive public msg: {}, userId: {}, '.format(msg.content, msg.source))
+            logger.info('[WX_Public] receive public msg.key:{}'.format(msg.key))
             key = msg.content + '|' + msg.source
             if cache.get(key):
                 # request time
