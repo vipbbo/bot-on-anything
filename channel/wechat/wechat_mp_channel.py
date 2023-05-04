@@ -33,15 +33,16 @@ def rate_limiter(limit):
 
     return decorate
 
+
 @rate_limiter(3)
 def limit_api(user_id):
     print(f"Example API called for user {user_id}")
 
 
-
 robot = werobot.WeRoBot(token=channel_conf(const.WECHAT_MP).get('token'))
 thread_pool = ThreadPoolExecutor(max_workers=8)
 cache = {}
+
 
 @robot.text
 def hello_world(msg):
@@ -49,7 +50,7 @@ def hello_world(msg):
         limit_api(msg.source)
     except RateLimitException as e:
         return "您的免费额度只有10次。"
-    with open('sensitive_words.txt', 'r', encoding='utf-8') as f: #加入检测违规词
+    with open('sensitive_words.txt', 'r', encoding='utf-8') as f:  # 加入检测违规词
         sensitive_words = [line.strip() for line in f.readlines()]
         found = False
         for word in sensitive_words:
@@ -68,15 +69,15 @@ def hello_world(msg):
             return WechatSubsribeAccount().handle(msg)
 
 
-
 @robot.click
 def V1001_PERSON_INFO(msg):
     logger.info('[WX_Public] click event msg.type: {}, userId: {}'.format(msg.type, msg.source))
     logger.info('[WX_Public] receive public msg.key:{}'.format(msg.key))
     if msg.key == "V1001_PERSON_INFO":
-        return "Hello,World!"
+        return "个人信息\n角色：言小宝\n音色：小宝\n回复方式：仅文字\n余额：10次!"
 
     # return WechatServiceAccount().handle(msg)
+
 
 class WechatSubsribeAccount(Channel):
     def startup(self):
@@ -113,7 +114,7 @@ class WechatSubsribeAccount(Channel):
             if count == 5:
                 # 第5秒不做返回，防止消息发送出去了但是微信已经中断连接
                 return None
-            return self.handle(msg, count+1)
+            return self.handle(msg, count + 1)
 
     def _do_send(self, query, context):
         key = query + '|' + context['from_user_id']
