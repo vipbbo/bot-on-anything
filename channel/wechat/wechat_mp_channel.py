@@ -82,7 +82,8 @@ def V1002_CLEAR_INFO(msg):
     logger.info('[WX_Public] click event msg.type: {}, userId: {}'.format(msg.type, msg.source))
     logger.info('[WX_Public] click event msg.key:{}'.format(msg.key))
     if msg.key == "V1002_CLEAR_INFO":
-        return WechatSubsribeAccount().handle("清除记忆")
+        msg.content = "清除记忆";
+        return WechatSubsribeAccount().handle(msg)
 
     # return WechatServiceAccount().handle(msg)
 
