@@ -108,6 +108,7 @@ class WechatEnterpriseChannel(Channel):
             from_user_name = xml_data.find("FromUserName").text
             to_user_name = xml_data.find("ToUserName").text
             msg = parse_message(message)
+            logger.info("msg:{}",msg)
             if msg.type == 'text':
                 thread_pool.submit(self._do_send, msg.content, msg.source)
             if event_type == "CLICK":
