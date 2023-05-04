@@ -28,6 +28,7 @@ app = Flask(__name__)
 
 @app.route('/wechat', methods=['GET', 'POST'])
 def handler_msg():
+    logger.info("-----wechat-----")
     return WechatEnterpriseChannel().handle()
 
 
