@@ -8,21 +8,10 @@ from concurrent.futures import ThreadPoolExecutor
 robot = werobot.WeRoBot(token=channel_conf(const.WECHAT_MP).get('token'))
 thread_pool = ThreadPoolExecutor(max_workers=8)
 
-
-@robot.click
-def V1001_PERSON_INFO(msg):
-    logger.info('[WX_Public] click event: {}, userId: {}'.format(msg.content, msg.source))
-    if msg.key == "V1001_PERSON_INFO":
-        return "Hello,World!"
-
-    # return WechatServiceAccount().handle(msg)
-
-
 @robot.text
 def hello_world(msg):
     logger.info('[WX_Public] receive public msg: {}, userId: {}'.format(msg.content, msg.source))
     return WechatServiceAccount().handle(msg)
-
 
 
 class WechatServiceAccount(Channel):
@@ -32,14 +21,6 @@ class WechatServiceAccount(Channel):
         robot.config["APP_ID"] = channel_conf(const.WECHAT_MP).get('app_id')
         robot.config["APP_SECRET"] = channel_conf(const.WECHAT_MP).get('app_secret')
         robot.config['HOST'] = '0.0.0.0'
-        client = robot.client
-        client.create_menu({
-            "button": [{
-                "type": "click",
-                "name": "个人信息",
-                "key": "V1001_PERSON_INFO"
-            }]
-        })
         robot.run()
 
     def handle(self, msg, count=0):
@@ -47,6 +28,7 @@ class WechatServiceAccount(Channel):
         context['from_user_id'] = msg.source
         thread_pool.submit(self._do_send, msg.content, context)
         return "正在思考中..."
+
 
     def _do_send(self, query, context):
         reply_text = super().build_reply_content(query, context)
