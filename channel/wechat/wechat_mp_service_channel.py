@@ -6,6 +6,8 @@ from channel.channel import Channel
 from concurrent.futures import ThreadPoolExecutor
 
 robot = werobot.WeRoBot(token=channel_conf(const.WECHAT_MP).get('token'))
+robot.config["APP_ID"] = channel_conf(const.WECHAT_MP).get('app_id')
+robot.config["APP_SECRET"] = channel_conf(const.WECHAT_MP).get('app_secret')
 thread_pool = ThreadPoolExecutor(max_workers=8)
 client = robot.client
 
