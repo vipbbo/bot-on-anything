@@ -26,6 +26,7 @@ class WechatServiceAccount(Channel):
     def handle(self, msg, count=0):
         context = {}
         context['from_user_id'] = msg.source
+        logger.info("msg.content:{}", msg.content)
         thread_pool.submit(self._do_send, msg.content, context)
         return "正在思考中..."
 
