@@ -65,7 +65,12 @@ def handle_wechat_request(user_id):
 def get_visit_count(user_id):
     with lock:
         c.execute('SELECT visit_count FROM users WHERE user_id = ?', (user_id,))
-        count = c.fetchone()[0]
+        # 处理查询结果
+        if c.fetchone() is not None:
+            count = c.fetchone()[0]
+        else:
+            count = 0
+        #count = c.fetchone()[0]
     return jsonify(visit_count=count)
 
 
