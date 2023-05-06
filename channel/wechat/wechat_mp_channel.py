@@ -16,7 +16,7 @@ import threading
 lock = threading.Lock()
 
 # 连接到 SQLite3 数据库文件
-conn = sqlite3.connect('paidaxing_mp.db', timeout=10, cached_statements=False)
+conn = sqlite3.connect('paidaxing_mp.db', timeout=10, check_same_thread=False)
 c = conn.cursor()
 
 
