@@ -38,6 +38,9 @@ def init_db():
                          (user_id TEXT PRIMARY KEY AUTOINCREMENT,
                           visit_count INTEGER NOT NULL DEFAULT 0,
                           limit_count INTEGER NOT NULL DEFAULT 10)''')
+    else:
+        # 删除 user 表
+        c.execute('DROP TABLE IF EXISTS user')
 
     # 提交事务并关闭连接
     conn.commit()
