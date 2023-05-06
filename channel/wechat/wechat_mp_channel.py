@@ -64,14 +64,15 @@ def handle_wechat_request(user_id):
 # 提供获取用户访问次数的 API 接口
 def get_visit_count(user_id):
     with lock:
-        c.execute('SELECT visit_count FROM users WHERE user_id = ?', (user_id,))
+        c.execute('SELECT limit_count FROM users WHERE user_id = ?', (user_id,))
         # 处理查询结果
         if c.fetchone() is not None:
             count = c.fetchone()[0]
         else:
             count = 0
         #count = c.fetchone()[0]
-    return jsonify(visit_count=count)
+    return count
+    #return jsonify(visit_count=count)
 
 
 # ---------------------分割线
