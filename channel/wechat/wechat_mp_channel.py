@@ -12,6 +12,7 @@ import collections
 
 import sqlite3
 import threading
+
 # 创建互斥锁对象
 lock = threading.Lock()
 
@@ -41,7 +42,7 @@ def init_db():
 
     # 提交事务并关闭连接
     conn.commit()
-    #conn.close()
+    # conn.close()
 
 
 # 记录用户访问chatGPT事件的次数
@@ -61,18 +62,34 @@ def handle_wechat_request(user_id):
     conn.commit()
 
 
-# 提供获取用户访问次数的 API 接口
-def get_visit_count(user_id):
+# 提供获取用户最大访问次数的 API 接口
+def get_limit_count(user_id):
     with lock:
         c.execute('SELECT limit_count FROM users WHERE user_id = ?', (user_id,))
         # 处理查询结果
-        if c.fetchone() is not None:
-            count = c.fetchone()[0]
+        result = c.fetchone()
+        if result is not None:
+            count = result[0]
         else:
             count = 0
-        #count = c.fetchone()[0]
+        # count = c.fetchone()[0]
     return count
-    #return jsonify(visit_count=count)
+    # return jsonify(visit_count=count)
+
+
+# 提供获取用户已经访问次数的 API 接口
+def get_visit_count(user_id):
+    with lock:
+        c.execute('SELECT visit_count FROM users WHERE user_id = ?', (user_id,))
+        # 处理查询结果
+        result = c.fetchone()
+        if result is not None:
+            count = result[0]
+        else:
+            count = 0
+        # count = c.fetchone()[0]
+    return count
+    # return jsonify(visit_count=count)
 
 
 # ---------------------分割线
@@ -125,7 +142,9 @@ def on_subscribe(message):
 @robot.text
 def hello_world(msg):
     try:
-        limit_api(msg.source)
+        get_limit_count(msg.source)
+        rate_limiter()
+        # limit_api(msg.source)
     except RateLimitException as e:
         return "您的免费额度只有10次。"
     with open('sensitive_words.txt', 'r', encoding='utf-8') as f:  # 加入检测违规词
@@ -152,7 +171,8 @@ def V1001_PERSON_INFO(msg):
     logger.info('[WX_Public] click event msg.type: {}, userId: {}'.format(msg.type, msg.source))
     logger.info('[WX_Public] receive public msg.key:{}'.format(msg.key))
     if msg.key == "V1001_PERSON_INFO":
-        return "个人信息\n角色：言小宝\n音色：小宝\n回复方式：仅文字\n余额：" + str(get_visit_count(msg.source)) + "次!"
+        return "个人信息\n角色：言小宝\n音色：小宝\n回复方式：仅文字\n余额：" + str(
+            get_limit_count(msg.source) - get_visit_count(msg.source)) + "次!"
 
 
 @robot.click
