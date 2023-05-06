@@ -10,6 +10,8 @@ import os
 import collections
 
 
+num = 10
+
 class RateLimitException(Exception):
     pass
 
@@ -74,7 +76,7 @@ def V1001_PERSON_INFO(msg):
     logger.info('[WX_Public] click event msg.type: {}, userId: {}'.format(msg.type, msg.source))
     logger.info('[WX_Public] receive public msg.key:{}'.format(msg.key))
     if msg.key == "V1001_PERSON_INFO":
-        return "个人信息\n角色：言小宝\n音色：小宝\n回复方式：仅文字\n余额：10次!"
+        return "个人信息\n角色：言小宝\n音色：小宝\n回复方式：仅文字\n余额：" + num + "次!"
 
 
 @robot.click
@@ -108,6 +110,8 @@ class WechatSubsribeAccount(Channel):
             thread_pool.submit(self._do_send, msg.content, context)
 
         res = cache.get(key)
+        global num
+        num = num - count
         logger.info("count={}, res={}".format(count, res))
         if res.get('status') == 'success':
             res['status'] = "done"
