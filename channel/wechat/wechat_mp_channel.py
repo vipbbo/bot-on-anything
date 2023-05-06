@@ -13,7 +13,7 @@ import collections
 import sqlite3
 
 # 连接到 SQLite3 数据库文件
-conn = sqlite3.connect('paidaxing_mp.db')
+conn = sqlite3.connect('paidaxing_mp.db', timeout=10, cached_statements=False)
 c = conn.cursor()
 
 
