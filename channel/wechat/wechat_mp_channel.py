@@ -19,9 +19,9 @@ c = conn.cursor()
 
 # 连接到 SQLite3 数据库文件
 def init_db():
-    # 连接到 SQLite3 数据库文件
-    conn = sqlite3.connect('paidaxing_mp.db', timeout=10, cached_statements=False)
-    c = conn.cursor()
+    # # 连接到 SQLite3 数据库文件
+    # conn = sqlite3.connect('paidaxing_mp.db', timeout=10, cached_statements=False)
+    # c = conn.cursor()
 
     # 检查 users 表格是否存在
     query = "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
