@@ -5,12 +5,59 @@ from common import const
 from common.log import logger
 from channel.channel import Channel
 from concurrent.futures import ThreadPoolExecutor
+from flask import request, jsonify
 import os
 
 import collections
 
+import sqlite3
 
-num = 10
+# 连接到 SQLite3 数据库文件
+conn = sqlite3.connect('paidaxing_mp.db')
+c = conn.cursor()
+
+
+# 连接到 SQLite3 数据库文件
+def init_db():
+    # 连接到 SQLite3 数据库文件
+    conn = sqlite3.connect('paidaxing_mp.db')
+    c = conn.cursor()
+
+    # 执行 SQL 建表语句
+    c.execute('''CREATE TABLE users
+                 (user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  visit_count INTEGER NOT NULL DEFAULT 0,
+                  limit_count INTEGER NOT NULL DEFAULT 10)''')
+
+    # 提交事务并关闭连接
+    conn.commit()
+    conn.close()
+
+
+# 记录用户访问chatGPT事件的次数
+def mark_chatGPT_count(user_id):
+    # userId: 访问人的ID 0: 初始化访问次数  10: 一共可访问的次数
+    c.execute('INSERT OR IGNORE INTO users (user_id, visit_count, limit_count) VALUES (?, ?, ?)',
+              (user_id, 0, 10))
+    conn.commit()
+
+
+# 处理用户访问事件
+def handle_wechat_request(user_id):
+    # 更新用户访问次数
+    c.execute('UPDATE users SET visit_count = visit_count + 1 WHERE user_id = ?', (user_id,))
+    conn.commit()
+
+
+# 提供获取用户访问次数的 API 接口
+def get_visit_count(user_id):
+    c.execute('SELECT visit_count FROM users WHERE openid = ?', (user_id,))
+    count = c.fetchone()[0]
+    return jsonify(visit_count=count)
+
+
+# ---------------------分割线
+
 
 class RateLimitException(Exception):
     pass
@@ -46,6 +93,16 @@ thread_pool = ThreadPoolExecutor(max_workers=8)
 cache = {}
 
 
+# 处理新用户订阅事件，并初始化其访问CHATGPT的次数
+@robot.subscribe
+def on_subscribe(message):
+    user_id = message.source
+    # 在数据库中插入新用户信息
+    mark_chatGPT_count(user_id)
+    conn.commit()
+    return "欢迎关注我的公众号！"
+
+
 @robot.text
 def hello_world(msg):
     try:
@@ -76,7 +133,7 @@ def V1001_PERSON_INFO(msg):
     logger.info('[WX_Public] click event msg.type: {}, userId: {}'.format(msg.type, msg.source))
     logger.info('[WX_Public] receive public msg.key:{}'.format(msg.key))
     if msg.key == "V1001_PERSON_INFO":
-        return "个人信息\n角色：言小宝\n音色：小宝\n回复方式：仅文字\n余额：" + num + "次!"
+        return "个人信息\n角色：言小宝\n音色：小宝\n回复方式：仅文字\n余额：" + get_visit_count(msg.source) + "次!"
 
 
 @robot.click
@@ -95,9 +152,11 @@ class WechatSubsribeAccount(Channel):
         logger.info('[WX_Public] Wechat Public account service start!')
         robot.config['PORT'] = channel_conf(const.WECHAT_MP).get('port')
         robot.config['HOST'] = '0.0.0.0'
+        init_db()
         robot.run()
 
     def handle(self, msg, count=1):
+        handle_wechat_request(msg.source)
         if msg.content == "继续":
             return self.get_un_send_content(msg.source)
 
@@ -128,9 +187,6 @@ class WechatSubsribeAccount(Channel):
             return self.handle(msg, count + 1)
 
     def _do_send(self, query, context):
-        # m=没调用一次openai接口减少一次机会
-        global num
-        num = num - 1
         key = query + '|' + context['from_user_id']
         reply_text = super().build_reply_content(query, context)
         logger.info('[WX_Public] reply content: {}'.format(reply_text))
