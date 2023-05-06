@@ -142,8 +142,8 @@ def on_subscribe(message):
 @robot.text
 def hello_world(msg):
     try:
-        get_limit_count(msg.source)
-        rate_limiter()
+        limit_count = get_limit_count(msg.source)
+        rate_limiter(limit_count)
         # limit_api(msg.source)
     except RateLimitException as e:
         return "您的免费额度只有10次。"
