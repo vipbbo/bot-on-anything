@@ -20,14 +20,19 @@ c = conn.cursor()
 # 连接到 SQLite3 数据库文件
 def init_db():
     # 连接到 SQLite3 数据库文件
-    conn = sqlite3.connect('paidaxing_mp.db')
+    conn = sqlite3.connect('paidaxing_mp.db', timeout=10, cached_statements=False)
     c = conn.cursor()
 
-    # 执行 SQL 建表语句
-    c.execute('''CREATE TABLE users
-                 (user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  visit_count INTEGER NOT NULL DEFAULT 0,
-                  limit_count INTEGER NOT NULL DEFAULT 10)''')
+    # 检查 users 表格是否存在
+    query = "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+    result = c.execute(query)
+    # 如果不存在则新建表格
+    if not result.fetchone():
+        # 执行 SQL 建表语句
+        c.execute('''CREATE TABLE users
+                     (user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      visit_count INTEGER NOT NULL DEFAULT 0,
+                      limit_count INTEGER NOT NULL DEFAULT 10)''')
 
     # 提交事务并关闭连接
     conn.commit()
