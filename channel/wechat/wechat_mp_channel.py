@@ -110,8 +110,6 @@ class WechatSubsribeAccount(Channel):
             thread_pool.submit(self._do_send, msg.content, context)
 
         res = cache.get(key)
-        global num
-        num = num - count
         logger.info("count={}, res={}".format(count, res))
         if res.get('status') == 'success':
             res['status'] = "done"
@@ -130,6 +128,9 @@ class WechatSubsribeAccount(Channel):
             return self.handle(msg, count + 1)
 
     def _do_send(self, query, context):
+        # m=没调用一次openai接口减少一次机会
+        global num
+        num = num - 1
         key = query + '|' + context['from_user_id']
         reply_text = super().build_reply_content(query, context)
         logger.info('[WX_Public] reply content: {}'.format(reply_text))
