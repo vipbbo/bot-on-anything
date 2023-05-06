@@ -35,12 +35,9 @@ def init_db():
         # 使用线程锁来保证同一时间只能有一个线程访问数据库
         with lock:
             c.execute('''CREATE TABLE users
-                         (user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                         (user_id TEXT PRIMARY KEY AUTOINCREMENT,
                           visit_count INTEGER NOT NULL DEFAULT 0,
                           limit_count INTEGER NOT NULL DEFAULT 10)''')
-    else:
-        # 删除 user 表
-        c.execute('DROP TABLE IF EXISTS user')
 
     # 提交事务并关闭连接
     conn.commit()
