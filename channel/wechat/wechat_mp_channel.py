@@ -143,6 +143,9 @@ def on_subscribe(message):
 def hello_world(msg):
     try:
         limit_count = get_limit_count(msg.source)
+        visit_count = get_visit_count(msg.source)
+        if visit_count > limit_count:
+            return "您的免费额度只有 " + str(limit_count) + " 次。"
         rate_limiter(limit_count)
         # limit_api(msg.source)
     except RateLimitException as e:
@@ -195,7 +198,7 @@ class WechatSubsribeAccount(Channel):
         robot.run()
 
     def handle(self, msg, count=1):
-        handle_wechat_request(msg.source)
+        # handle_wechat_request(msg.source)
         if msg.content == "继续":
             return self.get_un_send_content(msg.source)
 
@@ -226,6 +229,7 @@ class WechatSubsribeAccount(Channel):
             return self.handle(msg, count + 1)
 
     def _do_send(self, query, context):
+        handle_wechat_request(context['from_user_id'])
         key = query + '|' + context['from_user_id']
         reply_text = super().build_reply_content(query, context)
         logger.info('[WX_Public] reply content: {}'.format(reply_text))
