@@ -41,7 +41,7 @@ def init_db():
 
     # 提交事务并关闭连接
     conn.commit()
-    conn.close()
+    #conn.close()
 
 
 # 记录用户访问chatGPT事件的次数
