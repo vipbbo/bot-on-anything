@@ -56,7 +56,7 @@ def handle_wechat_request(user_id):
 
 # 提供获取用户访问次数的 API 接口
 def get_visit_count(user_id):
-    c.execute('SELECT visit_count FROM users WHERE openid = ?', (user_id,))
+    c.execute('SELECT visit_count FROM users WHERE user_id = ?', (user_id,))
     count = c.fetchone()[0]
     return jsonify(visit_count=count)
 
