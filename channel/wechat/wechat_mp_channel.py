@@ -11,6 +11,9 @@ import os
 import collections
 
 import sqlite3
+import threading
+# 创建互斥锁对象
+lock = threading.Lock()
 
 # 连接到 SQLite3 数据库文件
 conn = sqlite3.connect('paidaxing_mp.db', timeout=10, cached_statements=False)
@@ -29,10 +32,12 @@ def init_db():
     # 如果不存在则新建表格
     if not result.fetchone():
         # 执行 SQL 建表语句
-        c.execute('''CREATE TABLE users
-                     (user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      visit_count INTEGER NOT NULL DEFAULT 0,
-                      limit_count INTEGER NOT NULL DEFAULT 10)''')
+        # 使用线程锁来保证同一时间只能有一个线程访问数据库
+        with lock:
+            c.execute('''CREATE TABLE users
+                         (user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          visit_count INTEGER NOT NULL DEFAULT 0,
+                          limit_count INTEGER NOT NULL DEFAULT 10)''')
 
     # 提交事务并关闭连接
     conn.commit()
@@ -41,23 +46,26 @@ def init_db():
 
 # 记录用户访问chatGPT事件的次数
 def mark_chatGPT_count(user_id):
-    # userId: 访问人的ID 0: 初始化访问次数  10: 一共可访问的次数
-    c.execute('INSERT OR IGNORE INTO users (user_id, visit_count, limit_count) VALUES (?, ?, ?)',
-              (user_id, 0, 10))
+    with lock:
+        # userId: 访问人的ID 0: 初始化访问次数  10: 一共可访问的次数
+        c.execute('INSERT OR IGNORE INTO users (user_id, visit_count, limit_count) VALUES (?, ?, ?)',
+                  (user_id, 0, 10))
     conn.commit()
 
 
 # 处理用户访问事件
 def handle_wechat_request(user_id):
-    # 更新用户访问次数
-    c.execute('UPDATE users SET visit_count = visit_count + 1 WHERE user_id = ?', (user_id,))
+    with lock:
+        # 更新用户访问次数
+        c.execute('UPDATE users SET visit_count = visit_count + 1 WHERE user_id = ?', (user_id,))
     conn.commit()
 
 
 # 提供获取用户访问次数的 API 接口
 def get_visit_count(user_id):
-    c.execute('SELECT visit_count FROM users WHERE user_id = ?', (user_id,))
-    count = c.fetchone()[0]
+    with lock:
+        c.execute('SELECT visit_count FROM users WHERE user_id = ?', (user_id,))
+        count = c.fetchone()[0]
     return jsonify(visit_count=count)
 
 
