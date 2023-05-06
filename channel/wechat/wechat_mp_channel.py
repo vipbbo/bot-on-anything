@@ -152,7 +152,7 @@ def V1001_PERSON_INFO(msg):
     logger.info('[WX_Public] click event msg.type: {}, userId: {}'.format(msg.type, msg.source))
     logger.info('[WX_Public] receive public msg.key:{}'.format(msg.key))
     if msg.key == "V1001_PERSON_INFO":
-        return "个人信息\n角色：言小宝\n音色：小宝\n回复方式：仅文字\n余额：" + get_visit_count(msg.source) + "次!"
+        return "个人信息\n角色：言小宝\n音色：小宝\n回复方式：仅文字\n余额：" + str(get_visit_count(msg.source)) + "次!"
 
 
 @robot.click
